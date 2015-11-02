@@ -14,33 +14,25 @@ import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 public class SitemapGenerator
 {
-    // http://localhost:8080/tartustour-russia
-    // http://tartustour.ru
     private static final String URL = "http://tartustour.ru";
-
-    private static final String LOC = "/tartustour-russia";
 
     private static final String A_HREF_CSS_QUERY = "a[href]";
 
-    // массив для хранения всех ссылок
     private static Set<String> AllUrl = new HashSet<String>();
 
-    // массив для хранения пройденных ссылок
     private static Set<String> UsedUrl = new HashSet<String>();
 
-    // массив для хранения мусора
     private static Set<String> Garbage = new HashSet<String>();
 
     public static void main(String[] args) throws IOException
     {
         String url = URL;
         getLinkForUrl(url);
-        
+
         AllUrl.removeAll(Garbage);
         createSiteMap(URL, AllUrl);
     }
@@ -75,10 +67,11 @@ public class SitemapGenerator
 
             for (Element link : links)
             {
+                // |(^/.*)
                 String linkHref = link.attr("href");
                 if (linkHref != null)
                 {
-                    if (linkHref.matches("(^" + URL + "/.*)|(^/.*)")
+                    if (linkHref.matches("(^" + URL + "/.*)")
                             && (!linkHref.contains("/image/")
                                     && !linkHref.contains("/admin/") && !linkHref
                                         .contains("/download/")))
@@ -120,10 +113,12 @@ public class SitemapGenerator
     {
         System.out.println("CREATE SITEMAP.XML");
         WebSitemapGenerator wsg = new WebSitemapGenerator(URL, new File("D:\\"));
+
         for (String url : AllUrl)
             wsg.addUrl(url);
 
         wsg.write();
+        wsg.writeSitemapsWithIndex(); // generate the sitemap_index.xml
     }
 
 }

@@ -1,0 +1,30 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>net.hordieiko.travel</groupId>
+	<artifactId>sitemap-tartustour-russia</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
+	<properties>
+		<java-version>1.6</java-version>
+		<org.springframework-version>4.0.5.RELEASE</org.springframework-version>
+		<org.aspectj-version>1.6.10</org.aspectj-version>
+		<org.slf4j-version>1.6.1</org.slf4j-version>
+		<hibernate.version>4.3.5.Final</hibernate.version>
+		<ehcache.version>2.6.9</ehcache.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>com.google.code</groupId>
+			<artifactId>sitemapgen4j</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.8.3</version>
+		</dependency>
+	</dependencies>
+
+</project>

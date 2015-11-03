@@ -12,8 +12,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
-import java.util.ConcurrentModificationException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.ListIterator;
 import java.util.Set;
 
 public class SitemapGenerator
@@ -22,103 +23,91 @@ public class SitemapGenerator
 
     private static final String A_HREF_CSS_QUERY = "a[href]";
 
-    private static Set<String> AllUrl = new HashSet<String>();
-
-    private static Set<String> UsedUrl = new HashSet<String>();
-
     private static Set<String> Garbage = new HashSet<String>();
+
+    private static Set<String> UsedURL = new HashSet<String>();
+
+    private static ArrayList<String> AllUrlQ = new ArrayList<String>();
 
     public static void main(String[] args) throws IOException
     {
-        String url = URL;
-        getLinkForUrl(url);
+        AllUrlQ.add("http://tartustour.ru/aktsii/");
 
-        AllUrl.removeAll(Garbage);
-        createSiteMap(URL, AllUrl);
+        breadthFirstSearch();
+
+        AllUrlQ.removeAll(Garbage);
+
+        Set<String> Result = new HashSet<String>(AllUrlQ);
+
+        createSiteMap(Result);
     }
 
-    private static void getLinkForUrl(String url) throws IOException
+    private static void breadthFirstSearch() throws IOException
     {
-        System.out.println("input url: " + url);
-        if (url.length() != 0)
+        ListIterator<String> iter = AllUrlQ.listIterator();
+        while (iter.hasNext())
         {
-            if (UsedUrl.contains(url))
-                return;
-            else
-                UsedUrl.add(url);
+            String link = iter.next();
 
-            Document document = null;
-            try
+            System.out.println("iter.next(): " + link);
+            if (!UsedURL.contains(link))
             {
-                document = Jsoup.connect(url).timeout(90000).get();
-            }
-            catch (HttpStatusException e)
-            {
-                Garbage.add(url);
-                return;
-            }
-            catch (SocketTimeoutException e)
-            {
-                Garbage.add(url);
-                return;
-            }
-
-            Elements links = document.select(A_HREF_CSS_QUERY);
-
-            for (Element link : links)
-            {
-                // |(^/.*)
-                String linkHref = link.attr("href");
-                if (linkHref != null)
+                Document document = null;
+                try
                 {
-                    if (linkHref.matches("(^" + URL + "/.*)")
-                            && (!linkHref.contains("/image/")
-                                    && !linkHref.contains("/admin/") && !linkHref
-                                        .contains("/download/")))
+                    document = Jsoup.connect(link).timeout(90000).get();
+                }
+                catch (HttpStatusException e)
+                {
+                    System.out.println("HttpStatusException");
+                    Garbage.add(link);
+                    continue;
+                }
+                catch (SocketTimeoutException e)
+                {
+                    System.out.println("SocketTimeoutException");
+                    Garbage.add(link);
+                    continue;
+                }
+
+                UsedURL.add(link);
+
+                Elements links = document.select(A_HREF_CSS_QUERY);
+
+                for (Element pLink : links)
+                {
+                    String linkHref = pLink.attr("href");
+                    // |(^/.*)
+                    if (linkHref != null && !UsedURL.contains(linkHref)
+                            && !AllUrlQ.contains(linkHref)
+                            && !AllUrlQ.contains(URL + linkHref)
+                            && linkHref.matches("(^" + URL + "/.*)|(^/.*)")
+                            && !linkHref.contains("/image/")
+                            && !linkHref.contains("/admin/")
+                            && !linkHref.contains("/download/"))
                     {
-                        // нужно исправить ссылку на tartustour.ru
-                        // Залил commit в master
-                        if (linkHref
-                                .equals("http://tartustour.ru/kontakty//karta_sayta/"))
-                        {
-                            linkHref = "http://tartustour.ru/karta_sayta/";
-                            AllUrl.add(linkHref);
-                        }
+                        if (linkHref.contains(URL))
+                            iter.add(linkHref);
                         else
-                        {
-                            if (linkHref.contains(URL))
-                                AllUrl.add(linkHref);
-                            else
-                                AllUrl.add(URL + linkHref);
-                        }
+                            iter.add(URL + linkHref);
+                        iter.previous();
                     }
                 }
             }
-
-            try
-            {
-                for (String aUrl : AllUrl)
-                    getLinkForUrl(aUrl);
-                return;
-            }
-            catch (ConcurrentModificationException e)
-            {
-                return;
-            }
         }
+        return;
     }
 
-    private static void createSiteMap(String URL, Set<String> AllUrl)
+    private static void createSiteMap(Set<String> Result)
             throws MalformedURLException
     {
-        System.out.println("CREATE SITEMAP.XML");
         WebSitemapGenerator wsg = new WebSitemapGenerator(URL, new File("D:\\"));
-
-        for (String url : AllUrl)
+        
+        for (String url : Result)
             wsg.addUrl(url);
 
         wsg.write();
         wsg.writeSitemapsWithIndex(); // generate the sitemap_index.xml
+        System.out.println("CREATE SITEMAP.XML");
     }
-
 }

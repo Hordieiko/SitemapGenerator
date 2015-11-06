@@ -111,8 +111,8 @@ public class SitemapGenerator
     private static void createSiteMap(Set<String> Result)
             throws MalformedURLException
     {
-        WebSitemapGenerator wsg = new WebSitemapGenerator(DOMEIN, new File(
-                "D:\\"));
+        File baseDir = new File(Configuration.getInstance().getTempDirectory());
+        WebSitemapGenerator wsg = new WebSitemapGenerator(DOMEIN, baseDir);
 
         for (String url : Result)
             wsg.addUrl(url);

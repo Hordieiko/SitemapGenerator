@@ -3,6 +3,7 @@
 	<batchSize>1</batchSize>
 	<delay>90</delay>
 	<splitSize>50000</splitSize>
+	<tempDirectory>D:\\</tempDirectory>
 	<patterns>
 		<pattern>^http://tartustour.ru/+.*|^/.*</pattern>
 	</patterns>

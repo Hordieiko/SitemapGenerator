@@ -9,10 +9,11 @@
 				maxOccurs="1" />
 			<xsd:element name="delay" type="xsd:int" minOccurs="1"
 				maxOccurs="1" />
-			<xsd:element name="splitSize" type="xsd:int"
-				minOccurs="1" maxOccurs="1" />
-			<xsd:element name="patterns" type="exclusion"
-				minOccurs="1" maxOccurs="1" />
+			<xsd:element name="splitSize" type="xsd:int" minOccurs="1"
+				maxOccurs="1" />
+			<xsd:element name="tempDirectory" type="xsd:string" />
+			<xsd:element name="patterns" type="exclusion" minOccurs="1"
+				maxOccurs="1" />
 		</xsd:sequence>
 	</xsd:complexType>
 

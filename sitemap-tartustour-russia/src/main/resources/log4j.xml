@@ -12,7 +12,7 @@
 
 	<appender name="FILE" class="org.apache.log4j.FileAppender">
 
-		<param name="file" value="log/currency-import.log" />
+		<param name="file" value="log/sitemap.log" />
 		<param name="Append" value="false" />
 
 		<layout class="org.apache.log4j.PatternLayout">
@@ -20,7 +20,7 @@
 		</layout>
 	</appender>
 
-	<logger name="net.mpopov.ci">
+	<logger name="net.mpopov.sitemap">
 		<level value="info" />
 		<appender-ref ref="FILE" />
 	</logger>

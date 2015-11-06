@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<batchSize>1</batchSize>
+	<delay>90</delay>
+	<splitSize>50000</splitSize>
+	<patterns>
+		<pattern>^http://tartustour.ru/+.*|^/.*</pattern>
+	</patterns>
+</configuration>

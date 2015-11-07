@@ -13,10 +13,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -32,24 +32,16 @@ public class SitemapGenerator
 
     private static final String A_HREF_CSS_QUERY = "a[href]";
 
-    private static Set<String> garbage = new HashSet<String>();
+    private static Set<String> allUrl = new HashSet<String>();
 
-    private static Set<String> usedUrl = new HashSet<String>();
-
-    private static ArrayList<String> allUrl = new ArrayList<String>();
+    private static Queue<String> pageUrl = new LinkedList<String>();
 
     public static void main(String[] args) throws IOException,
             InterruptedException
     {
-        allUrl.add(DOMAIN);
-
         breadthFirstSearch();
 
-        allUrl.removeAll(garbage);
-
-        Set<String> Result = new HashSet<String>(allUrl);
-
-        createSiteMap(Result);
+        createSiteMap();
     }
 
     private static void breadthFirstSearch() throws IOException,
@@ -58,23 +50,27 @@ public class SitemapGenerator
         List<String> allowablePatterns = Configuration.getInstance()
                 .getPatterns().getPattern();
 
-        int delaySplitSize = 1000 * Configuration.getInstance().getDelaySplitSize();
+        int delaySplitSize = 1000 * Configuration.getInstance()
+                .getDelaySplitSize();
 
         int delayBetweenPages = Configuration.getInstance()
                 .getDelayBetweenPages();
 
         int batchSize = Configuration.getInstance().getBatchSize();
 
-        ListIterator<String> iter = allUrl.listIterator();
-        while (iter.hasNext())
-        {
-            String link = iter.next();
-            if (!usedUrl.contains(link))
-            {
-                if (iter.nextIndex() % batchSize == 0)
-                    TimeUnit.SECONDS.sleep(delayBetweenPages);
+        pageUrl.offer(DOMAIN);
 
-                usedUrl.add(link);
+        int page = 0;
+
+        while (!pageUrl.isEmpty())
+        {
+            String link = pageUrl.poll();
+
+            if (!allUrl.equals(link))
+            {
+                page++;
+                if (page % batchSize == 0)
+                    TimeUnit.SECONDS.sleep(delayBetweenPages);
 
                 Document document = null;
                 try
@@ -87,7 +83,6 @@ public class SitemapGenerator
                     String message = String
                             .format("HttpStatusException for link: " + link);
                     LOGGER.error(message);
-                    garbage.add(link);
                     continue;
                 }
                 catch (SocketTimeoutException e)
@@ -95,31 +90,30 @@ public class SitemapGenerator
                     String message = String
                             .format("SocketTimeoutException for link: " + link);
                     LOGGER.error(message);
-                    garbage.add(link);
                     continue;
                 }
+
+                allUrl.add(link);
 
                 Elements links = document.select(A_HREF_CSS_QUERY);
 
                 for (Element pLink : links)
                 {
                     String linkHref = pLink.attr("href");
-                    if (linkHref != null && !allUrl.contains(linkHref)
-                            && !allUrl.contains(DOMAIN + linkHref))
+                    if (linkHref != null)
                     {
                         boolean allowable = true;
                         for (String pattern : allowablePatterns)
                             if (linkHref.matches(pattern))
+                            {
                                 allowable = false;
-
+                                break;
+                            }
                         if (allowable)
-                        {
                             if (linkHref.contains(DOMAIN))
-                                iter.add(linkHref);
+                                pageUrl.offer(linkHref);
                             else
-                                iter.add(DOMAIN + linkHref);
-                            iter.previous();
-                        }
+                                pageUrl.offer(DOMAIN + linkHref);
                     }
                 }
             }
@@ -127,16 +121,16 @@ public class SitemapGenerator
         return;
     }
 
-    private static void createSiteMap(Set<String> Result)
+    private static void createSiteMap()
             throws MalformedURLException
     {
-        if (!Result.isEmpty())
+        if (!allUrl.isEmpty())
         {
             File baseDir = new File(Configuration.getInstance()
                     .getTempDirectory());
             WebSitemapGenerator wsg = new WebSitemapGenerator(DOMAIN, baseDir);
 
-            for (String url : Result)
+            for (String url : allUrl)
                 wsg.addUrl(url);
 
             wsg.write();

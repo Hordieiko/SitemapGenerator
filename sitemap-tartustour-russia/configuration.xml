@@ -3,7 +3,6 @@
 	<batchSize>10</batchSize>
 	<delaySplitSize>90</delaySplitSize>
 	<delayBetweenPages>10</delayBetweenPages>
-	<splitSize>50000</splitSize>
 	<tempDirectory>D:\\</tempDirectory>
 	<domain>http://tartustour.ru</domain>
 	<patterns>
@@ -15,3 +14,4 @@
 		<pattern>^((?!cruise-list).)*$</pattern>
 	</patterns>
 </configuration>
+add & in patterns

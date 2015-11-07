@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,7 +41,6 @@ public class SitemapGenerator
             InterruptedException
     {
         breadthFirstSearch();
-
         createSiteMap();
     }
 
@@ -65,18 +65,27 @@ public class SitemapGenerator
         while (!pageUrl.isEmpty())
         {
             String link = pageUrl.poll();
-
             if (!allUrl.equals(link))
             {
+                System.out.println("link: " + link);
                 page++;
                 if (page % batchSize == 0)
+                {
                     TimeUnit.SECONDS.sleep(delayBetweenPages);
+                }
 
                 Document document = null;
                 try
                 {
                     document = Jsoup.connect(link).timeout(delaySplitSize)
                             .get();
+                }
+                catch (UnknownHostException e)
+                {
+                    String message = String
+                            .format("UnknownHostException for link: " + link);
+                    LOGGER.error(message);
+                    continue;
                 }
                 catch (HttpStatusException e)
                 {
@@ -104,11 +113,12 @@ public class SitemapGenerator
                     {
                         boolean allowable = true;
                         for (String pattern : allowablePatterns)
-                            if (linkHref.matches(pattern))
+                            if (!linkHref.matches(pattern))
                             {
                                 allowable = false;
                                 break;
                             }
+                        
                         if (allowable)
                             if (linkHref.contains(DOMAIN))
                                 pageUrl.offer(linkHref);
@@ -121,8 +131,7 @@ public class SitemapGenerator
         return;
     }
 
-    private static void createSiteMap()
-            throws MalformedURLException
+    private static void createSiteMap() throws MalformedURLException
     {
         if (!allUrl.isEmpty())
         {

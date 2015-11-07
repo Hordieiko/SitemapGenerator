@@ -6,7 +6,7 @@
 	<tempDirectory>D:\\</tempDirectory>
 	<domain>http://tartustour.ru</domain>
 	<patterns>
-		<pattern>^http://tartustour.ru/.*|^/.*$</pattern>
+		<pattern>^http://tartustour.ru.*|^/.*$</pattern>
 		<pattern>^((?!image).)*$</pattern>
 		<pattern>^((?!admin).)*$</pattern>
 		<pattern>^((?!download).)*$</pattern>
@@ -14,4 +14,3 @@
 		<pattern>^((?!cruise-list).)*$</pattern>
 	</patterns>
 </configuration>
-add & in patterns

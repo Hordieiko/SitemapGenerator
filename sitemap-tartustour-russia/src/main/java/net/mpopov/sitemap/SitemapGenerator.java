@@ -15,70 +15,87 @@ import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import generated.Configuration;
 
 public class SitemapGenerator
 {
-    private static final Logger logger = Logger
+    private static final Logger LOGGER = Logger
             .getLogger(SitemapGenerator.class);
 
-    private static final String DOMEIN = "http://tartustour.ru";
+    private static final String DOMAIN = Configuration.getInstance()
+            .getDomain();
 
     private static final String A_HREF_CSS_QUERY = "a[href]";
 
-    private static Set<String> Garbage = new HashSet<String>();
+    private static Set<String> garbage = new HashSet<String>();
 
-    private static Set<String> UsedURL = new HashSet<String>();
+    private static Set<String> usedUrl = new HashSet<String>();
 
-    private static ArrayList<String> AllUrlQ = new ArrayList<String>();
+    private static ArrayList<String> allUrl = new ArrayList<String>();
 
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args) throws IOException,
+            InterruptedException
     {
-        AllUrlQ.add(DOMEIN);
+        allUrl.add(DOMAIN);
 
         breadthFirstSearch();
 
-        AllUrlQ.removeAll(Garbage);
+        allUrl.removeAll(garbage);
 
-        Set<String> Result = new HashSet<String>(AllUrlQ);
+        Set<String> Result = new HashSet<String>(allUrl);
 
         createSiteMap(Result);
     }
 
-    private static void breadthFirstSearch() throws IOException
+    private static void breadthFirstSearch() throws IOException,
+            InterruptedException
     {
-        int delay = 1000 * Configuration.getInstance().getDelay();
+        List<String> allowablePatterns = Configuration.getInstance()
+                .getPatterns().getPattern();
 
-        ListIterator<String> iter = AllUrlQ.listIterator();
+        int delaySplitSize = 1000 * Configuration.getInstance().getDelaySplitSize();
+
+        int delayBetweenPages = Configuration.getInstance()
+                .getDelayBetweenPages();
+
+        int batchSize = Configuration.getInstance().getBatchSize();
+
+        ListIterator<String> iter = allUrl.listIterator();
         while (iter.hasNext())
         {
             String link = iter.next();
-            if (!UsedURL.contains(link))
+            if (!usedUrl.contains(link))
             {
-                UsedURL.add(link);
+                if (iter.nextIndex() % batchSize == 0)
+                    TimeUnit.SECONDS.sleep(delayBetweenPages);
+
+                usedUrl.add(link);
 
                 Document document = null;
                 try
                 {
-                    document = Jsoup.connect(link).timeout(delay).get();
+                    document = Jsoup.connect(link).timeout(delaySplitSize)
+                            .get();
                 }
                 catch (HttpStatusException e)
                 {
                     String message = String
                             .format("HttpStatusException for link: " + link);
-                    logger.error(message);
-                    Garbage.add(link);
+                    LOGGER.error(message);
+                    garbage.add(link);
                     continue;
                 }
                 catch (SocketTimeoutException e)
                 {
                     String message = String
                             .format("SocketTimeoutException for link: " + link);
-                    logger.error(message);
-                    Garbage.add(link);
+                    LOGGER.error(message);
+                    garbage.add(link);
                     continue;
                 }
 
@@ -87,20 +104,22 @@ public class SitemapGenerator
                 for (Element pLink : links)
                 {
                     String linkHref = pLink.attr("href");
-                    if (linkHref != null
-                            && !AllUrlQ.contains(linkHref)
-                            && !AllUrlQ.contains(DOMEIN + linkHref)
-                            && linkHref.matches(Configuration.getInstance()
-                                    .getPatterns().getPattern().get(0))
-                            && !linkHref.contains("/image/")
-                            && !linkHref.contains("/admin/")
-                            && !linkHref.contains("/download/"))
+                    if (linkHref != null && !allUrl.contains(linkHref)
+                            && !allUrl.contains(DOMAIN + linkHref))
                     {
-                        if (linkHref.contains(DOMEIN))
-                            iter.add(linkHref);
-                        else
-                            iter.add(DOMEIN + linkHref);
-                        iter.previous();
+                        boolean allowable = true;
+                        for (String pattern : allowablePatterns)
+                            if (linkHref.matches(pattern))
+                                allowable = false;
+
+                        if (allowable)
+                        {
+                            if (linkHref.contains(DOMAIN))
+                                iter.add(linkHref);
+                            else
+                                iter.add(DOMAIN + linkHref);
+                            iter.previous();
+                        }
                     }
                 }
             }
@@ -111,24 +130,25 @@ public class SitemapGenerator
     private static void createSiteMap(Set<String> Result)
             throws MalformedURLException
     {
-        File baseDir = new File(Configuration.getInstance().getTempDirectory());
-        WebSitemapGenerator wsg = new WebSitemapGenerator(DOMEIN, baseDir);
-
-        for (String url : Result)
-            wsg.addUrl(url);
-
-        try
+        if (!Result.isEmpty())
         {
+            File baseDir = new File(Configuration.getInstance()
+                    .getTempDirectory());
+            WebSitemapGenerator wsg = new WebSitemapGenerator(DOMAIN, baseDir);
+
+            for (String url : Result)
+                wsg.addUrl(url);
+
             wsg.write();
             wsg.writeSitemapsWithIndex();
-            System.out.println("CREATE SITEMAP.XML");
+            LOGGER.info("CREATE SITEMAP.XML");
         }
-        catch (RuntimeException e)
+        else
         {
             String message = String
                     .format("No URLs added, sitemap would be empty;"
                             + " you must add some URLs with addUrls.");
-            logger.error(message);
+            LOGGER.error(message);
         }
         return;
     }

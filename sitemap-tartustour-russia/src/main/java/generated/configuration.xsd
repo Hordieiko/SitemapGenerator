@@ -7,11 +7,14 @@
 		<xsd:sequence>
 			<xsd:element name="batchSize" type="xsd:int" minOccurs="1"
 				maxOccurs="1" />
-			<xsd:element name="delay" type="xsd:int" minOccurs="1"
+			<xsd:element name="delaySplitSize" type="xsd:int" minOccurs="1"
 				maxOccurs="1" />
+			<xsd:element name="delayBetweenPages" type="xsd:int"
+				minOccurs="1" maxOccurs="1" />
 			<xsd:element name="splitSize" type="xsd:int" minOccurs="1"
 				maxOccurs="1" />
 			<xsd:element name="tempDirectory" type="xsd:string" />
+			<xsd:element name="domain" type="xsd:string" />
 			<xsd:element name="patterns" type="exclusion" minOccurs="1"
 				maxOccurs="1" />
 		</xsd:sequence>

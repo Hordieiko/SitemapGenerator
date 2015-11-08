@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<batchSize>10</batchSize>
+	<batchSize>50</batchSize>
 	<delaySplitSize>90</delaySplitSize>
 	<delayBetweenPages>10</delayBetweenPages>
 	<tempDirectory>D:\\</tempDirectory>
 	<domain>http://tartustour.ru</domain>
 	<patterns>
-		<pattern>^http://tartustour.ru.*|^/.*$</pattern>
+		<pattern>^http://tartustour.ru/.*|^/.*$</pattern>
 		<pattern>^((?!image).)*$</pattern>
 		<pattern>^((?!admin).)*$</pattern>
 		<pattern>^((?!download).)*$</pattern>

@@ -65,14 +65,10 @@ public class SitemapGenerator
         while (!pageUrl.isEmpty())
         {
             String link = pageUrl.poll();
-            if (!allUrl.equals(link))
+            if (!allUrl.contains(link))
             {
-                System.out.println("link: " + link);
-                page++;
-                if (page % batchSize == 0)
-                {
+                if (++page % batchSize == 0)
                     TimeUnit.SECONDS.sleep(delayBetweenPages);
-                }
 
                 Document document = null;
                 try
@@ -82,22 +78,19 @@ public class SitemapGenerator
                 }
                 catch (UnknownHostException e)
                 {
-                    String message = String
-                            .format("UnknownHostException for link: " + link);
+                    String message = "UnknownHostException for link: " + link;
                     LOGGER.error(message);
                     continue;
                 }
                 catch (HttpStatusException e)
                 {
-                    String message = String
-                            .format("HttpStatusException for link: " + link);
+                    String message = "HttpStatusException for link: " + link;
                     LOGGER.error(message);
                     continue;
                 }
                 catch (SocketTimeoutException e)
                 {
-                    String message = String
-                            .format("SocketTimeoutException for link: " + link);
+                    String message = "SocketTimeoutException for link: " + link;
                     LOGGER.error(message);
                     continue;
                 }
@@ -118,7 +111,7 @@ public class SitemapGenerator
                                 allowable = false;
                                 break;
                             }
-                        
+
                         if (allowable)
                             if (linkHref.contains(DOMAIN))
                                 pageUrl.offer(linkHref);
@@ -128,7 +121,6 @@ public class SitemapGenerator
                 }
             }
         }
-        return;
     }
 
     private static void createSiteMap() throws MalformedURLException
@@ -148,11 +140,9 @@ public class SitemapGenerator
         }
         else
         {
-            String message = String
-                    .format("No URLs added, sitemap would be empty;"
-                            + " you must add some URLs with addUrls.");
+            String message = "No URLs added, sitemap would be empty;"
+                    + " you must add some URLs with addUrls.";
             LOGGER.error(message);
         }
-        return;
     }
 }

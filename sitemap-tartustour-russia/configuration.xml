@@ -5,12 +5,13 @@
 	<delayBetweenPages>10</delayBetweenPages>
 	<tempDirectory>D:\\</tempDirectory>
 	<domain>http://tartustour.ru</domain>
+	<port>:8080</port>
 	<patterns>
-		<pattern>^http://tartustour.ru/.*|^/.*$</pattern>
-		<pattern>^((?!image).)*$</pattern>
-		<pattern>^((?!admin).)*$</pattern>
-		<pattern>^((?!download).)*$</pattern>
-		<pattern>^((?!hotel).)*$</pattern>
-		<pattern>^((?!cruise-list).)*$</pattern>
+		<pattern>^http://tartustour.ru/+.*/$|^/.*/$</pattern>
+		<pattern>^((?!image).)*/$</pattern>
+		<pattern>^((?!admin).)*/$</pattern>
+		<pattern>^((?!download).)*/$</pattern>
+		<pattern>^((?!hotel).)*/$</pattern>
+		<pattern>^((?!cruise-list).)*/$</pattern>
 	</patterns>
 </configuration>

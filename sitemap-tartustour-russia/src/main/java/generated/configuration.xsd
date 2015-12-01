@@ -13,6 +13,7 @@
 				minOccurs="1" maxOccurs="1" />
 			<xsd:element name="tempDirectory" type="xsd:string" />
 			<xsd:element name="domain" type="xsd:string" />
+			<xsd:element name="port" type="xsd:string" />
 			<xsd:element name="patterns" type="exclusion" minOccurs="1"
 				maxOccurs="1" />
 		</xsd:sequence>
